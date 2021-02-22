@@ -1,12 +1,14 @@
 package com.learn.reactor.selector;
 
 import com.learn.reactor.event.Event;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+@Component
 public class Selector {
     //定义一个链表阻塞queue实现缓冲队列，用于保证线程安全
     private BlockingQueue<Event> eventQueue=new LinkedBlockingQueue<>();
