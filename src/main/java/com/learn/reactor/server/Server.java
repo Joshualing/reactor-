@@ -8,6 +8,8 @@ import com.learn.reactor.dispatcher.Dispatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.*;
 
 @Service
@@ -20,7 +22,6 @@ public class Server implements Callable{
     private Dispatcher eventLooper;
     @Autowired
     Acceptor acceptor;
-
 
     public void start(){
         ThreadFactory acceptThreadFactory = new ThreadFactoryBuilder()
@@ -62,5 +63,9 @@ public class Server implements Callable{
     public Object call() throws Exception {
         start();
         return "call 返回值...";
+    }
+
+    public boolean getTaskCompleted(){
+        return eventLooper.taskSetBeDone();
     }
 }

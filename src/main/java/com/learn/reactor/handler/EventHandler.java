@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public abstract class EventHandler {
     private InputSource source;
 
-    public abstract void handler(Event event);
+    public abstract String handler(Event event);
 }

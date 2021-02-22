@@ -30,7 +30,7 @@ class DemoApplicationTests {
     private static ExecutorService executorService= Executors.newFixedThreadPool(1);
 
     @Test
-    void contextLoads() {
+    void contextLoads() throws InterruptedException {
         // 创建并启动计时器
         Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -38,9 +38,20 @@ class DemoApplicationTests {
 
         Future future = executorService.submit(myContext.getServer());
 
-        while(true){
-            if(future.isDone())
-                break;
+        //while(true){
+        //    if(future.isDone())
+        //        break;
+        //}
+        Thread.sleep(10*1000);
+
+        //taskSet的任务都结束
+        while(!myContext.getServer().getTaskCompleted()){
+            System.out.println("任务尚未结束...");
+            try {
+                Thread.sleep(3*1000);
+            } catch (InterruptedException exception) {
+                exception.printStackTrace();
+            }
         }
 
         stopwatch.stop();

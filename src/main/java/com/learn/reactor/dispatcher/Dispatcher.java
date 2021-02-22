@@ -1,5 +1,6 @@
 package com.learn.reactor.dispatcher;
 
+import com.google.common.collect.ConcurrentHashMultiset;
 import com.learn.reactor.data.EventType;
 import com.learn.reactor.event.Event;
 import com.learn.reactor.handler.EventHandler;
@@ -7,6 +8,7 @@ import com.learn.reactor.handler.Impl.AcceptEventHandler;
 import com.learn.reactor.handler.Impl.ReadEventhandler;
 import com.learn.reactor.handler.Impl.WriteEventhandler;
 import com.learn.reactor.selector.Selector;
+import com.sun.xml.internal.ws.util.CompletedFuture;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,10 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 @Data
 @AllArgsConstructor
@@ -29,6 +32,9 @@ public class Dispatcher implements Runnable {
     //本例只维护一个selector负责事件选择，netty为了保证性能实现了多个selector来保证循环处理性能，不同事件加入不同的selector的事件缓冲队列
     @Autowired
     Selector selector;
+
+
+    Set<Future> taskSet= Collections.synchronizedSet(new HashSet<>());
 
     //在Dispatcher中注册eventHandler
     public void registEventHandler(EventType eventType, ExecutorService executorService) {
@@ -51,18 +57,35 @@ public class Dispatcher implements Runnable {
 
             for (Event event : events) {
                 ExecutorService executorService = eventHandlerMap.get(event.getType());
-                if (event.getType().equals(EventType.ACCEPT))
-                    executorService.submit(new AcceptEventHandler(selector, event));
-                if (event.getType().equals(EventType.READ))
-                    executorService.submit(new ReadEventhandler(selector, event));
-                if (event.getType().equals(EventType.WRITE))
-                    executorService.submit(new WriteEventhandler(selector, event));
+                if (event.getType().equals(EventType.ACCEPT)){
+                    CompletableFuture completableFuture = CompletableFuture.supplyAsync(new AcceptEventHandler(selector, event), executorService);
+                    taskSet.add(completableFuture);
+                    completableFuture.thenAccept(System.out::println);
+                }
+                if (event.getType().equals(EventType.READ)){
+                    CompletableFuture completableFuture = CompletableFuture.supplyAsync(new ReadEventhandler(selector, event), executorService);
+                    taskSet.add(completableFuture);
+                    completableFuture.thenAccept(System.out::println);
+                }
+                if (event.getType().equals(EventType.WRITE)){
+                    CompletableFuture completableFuture = CompletableFuture.supplyAsync(new WriteEventhandler(selector, event), executorService);
+                    taskSet.add(completableFuture);
+                    completableFuture.thenAccept(System.out::println);
+                }
                 count++;
             }
-            //System.out.println("count:" + count);
             if (count == 40)
                 break;
         }
+    }
+
+    public boolean taskSetBeDone(){
+        boolean ret=true;
+        for (Future future : taskSet) {
+            if(!future.isDone())
+                return false;
+        }
+        return ret;
     }
 
     @Override
