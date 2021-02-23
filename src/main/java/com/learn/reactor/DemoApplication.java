@@ -1,10 +1,16 @@
 package com.learn.reactor;
 
+import com.google.common.base.Stopwatch;
 import com.learn.reactor.client.Client;
 import com.learn.reactor.server.Server;
+import org.checkerframework.checker.units.qual.A;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.*;
 
 /**
  * 手写Reactor模式（没调用javaNOI库）
@@ -19,23 +25,25 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication
 public class DemoApplication {
+    private static ExecutorService executorService=Executors.newFixedThreadPool(1);
 
     public static void main(String[] args) throws InterruptedException {
         SpringApplication.run(DemoApplication.class, args);
-
-        //绑定端口，开启server
-        System.out.println("main start...");
-        Server server=new Server(8080);
-
-        //持续产生事件
-        Client client=new Client();
-        client.setServer(server);
-
-        new Thread(client,"client thread").start();
-
-        Thread.sleep(4*1000);
-
-        server.start();
+        //// 创建并启动计时器
+        //Stopwatch stopwatch = Stopwatch.createStarted();
+        //
+        //new Thread(client,"client thread").start();
+        //
+        //Future future = executorService.submit(server);
+        //
+        //while(true){
+        //    if(future.isDone())
+        //        break;
+        //}
+        //
+        //stopwatch.stop();
+        //// 执行时间（单位：秒）
+        //System.out.printf("执行时长：%d 秒. %n", stopwatch.elapsed().getSeconds()); // %n 为换行
     }
 
 }

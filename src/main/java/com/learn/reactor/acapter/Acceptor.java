@@ -7,6 +7,9 @@ import com.learn.reactor.selector.Selector;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -14,17 +17,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Component
 public class Acceptor implements Runnable {
-    private int port;
+    @Value("myServerProt")
+    private String port;
+    @Autowired
     private Selector selector;
 
     // 代表 serversocket，通过LinkedBlockingQueue来模拟外部输入请求队列
     private BlockingQueue<InputSource> sourceQueue = new LinkedBlockingQueue<>();
-
-    public Acceptor(int port, Selector selector) {
-        this.port = port;
-        this.selector = selector;
-    }
 
     //外部有输入请求后，需要加入到请求队列中
     public void addNewConnection(InputSource source) {
